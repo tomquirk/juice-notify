@@ -22,18 +22,34 @@ function onTapEvent(_, projectId, beneficiary, amount) {
   });
 }
 
-function main({ projectId }) {
+function onPayEvent(_, projectId, beneficiary, amount) {
+  const data = { projectId: projectId.toString(), beneficiary, amount };
+  console.log(data);
+
+  const amountETH = ethers.utils.formatEther(amount);
+
+  postDiscordMessage({
+    content: `🎉 New Juicebox payment 🎉 \n\`${beneficiary}\` paid ${amountETH} ETH`,
+  });
+}
+
+function addEventListeners({ projectId }) {
   const provider = new JsonRpcProvider(RPC_HOST);
   const TerminalV1_1 = jbx.getTerminalV1_1Contract(provider);
 
-  const filter = TerminalV1_1.filters.Tap(
-    [],
-    ethers.BigNumber.from(projectId).toHexString()
-  );
+  const projectIdHex = ethers.BigNumber.from(projectId).toHexString();
 
-  TerminalV1_1.on(filter, onTapEvent);
+  const tapFilter = TerminalV1_1.filters.Tap([], projectIdHex);
+  TerminalV1_1.on(tapFilter, onTapEvent);
 
-  console.log("Listening for Tap event...");
+  const payFilter = TerminalV1_1.filters.Pay([], projectIdHex);
+  TerminalV1_1.on(payFilter, onPayEvent);
+}
+
+function main({ projectId }) {
+  addEventListeners(projectId);
+
+  console.log("Listening for events...");
 }
 
 main({ projectId: PEEL_JUICEBOX_PROJECT_ID });
