@@ -47,9 +47,9 @@ function addEventListeners({ projectId }) {
 }
 
 function main({ projectId }) {
-  addEventListeners(projectId);
+  addEventListeners({ projectId });
 
-  console.log("Listening for events...");
+  console.log(`Listening for events on Juicebox project ${projectId}...`);
 }
 
 main({ projectId: PEEL_JUICEBOX_PROJECT_ID });
